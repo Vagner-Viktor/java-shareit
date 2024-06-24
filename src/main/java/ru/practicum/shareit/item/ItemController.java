@@ -22,31 +22,33 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public Collection<ItemDto> findAll() {
+    public Collection<ItemDto> findAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
+        if (userId != null) return itemService.findItemsByUserId(userId);
         return itemService.findAll();
     }
 
     @GetMapping("/{itemId}")
     public ItemDto getItemDto(@PathVariable Long itemId) {
-        return null;
+        return itemService.findItemById(itemId);
     }
 
     @PostMapping
     public ItemDto create(@RequestHeader("X-Sharer-User-Id") Long userId,
                           @Valid @RequestBody ItemDto itemDto) {
-        return null;
+        return itemService.create(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
     public ItemDto update(@RequestHeader("X-Sharer-User-Id") Long userId,
                           @PathVariable Long itemId,
-                          @Valid @RequestBody ItemDto itemDto) {
-        return null;
+                          @RequestBody ItemDto itemDto) {
+        return itemService.update(userId, itemId, itemDto);
     }
 
-    @PostMapping("/search")
+    @GetMapping("/search")
     public Collection<ItemDto> searchItemDto(
+            @RequestHeader("X-Sharer-User-Id") Long userId,
             @RequestParam(defaultValue = "", required = false) String text) {
-        return null;
+        return itemService.findItemsByText(text);
     }
 }

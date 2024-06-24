@@ -28,7 +28,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto update(Long userId, UserDto userDto) {
         if (!userRepository.isUserExist(userId)) {
-            throw new NotFoundException("User (id = " + userDto.getId() + ") not found!");
+            throw new NotFoundException("User (id = " + userId + ") not found!");
         }
         userDto.setId(userId);
         return UserMapper.toUserDto(userRepository.update(UserMapper.toUser(userDto)));

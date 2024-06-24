@@ -10,11 +10,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ItemDto {
+    Long id;
     @NotBlank
     private String name;
     @NotBlank
     private String description;
     @NotNull
-    private boolean available;
+    private Boolean available;
     private Long request;
 }
