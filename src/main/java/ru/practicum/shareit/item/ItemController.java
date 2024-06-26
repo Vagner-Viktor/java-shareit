@@ -24,7 +24,7 @@ public class ItemController {
     @GetMapping
     public Collection<ItemDto> findAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
         if (userId != null) return itemService.findItemsByUserId(userId);
-        return itemService.findAll();
+        return null;
     }
 
     @GetMapping("/{itemId}")

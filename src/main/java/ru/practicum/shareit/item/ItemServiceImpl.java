@@ -2,8 +2,8 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exeption.NotFoundException;
-import ru.practicum.shareit.exeption.ValidationException;
+import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
@@ -26,9 +26,6 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto create(Long userId, ItemDto itemDto) {
         validation(userId, null);
-        if (itemDto.getAvailable() == null) {
-            throw new ValidationException("Available not found!");
-        }
         return ItemMapper.toItemDto(itemRepository.create(
                 Item.builder()
                         .name(itemDto.getName())

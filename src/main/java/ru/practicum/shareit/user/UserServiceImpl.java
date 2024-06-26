@@ -2,8 +2,8 @@ package ru.practicum.shareit.user;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exeption.DuplicatedDataException;
-import ru.practicum.shareit.exeption.NotFoundException;
+import ru.practicum.shareit.exception.DuplicatedDataException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 

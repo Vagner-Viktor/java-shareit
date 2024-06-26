@@ -2,36 +2,33 @@ package ru.practicum.shareit.user.dao;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.exeption.DuplicatedDataException;
-import ru.practicum.shareit.exeption.NotFoundException;
+import ru.practicum.shareit.exception.DuplicatedDataException;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.Collection;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Repository
 public class UserRepositoryImpl implements UserRepository {
     private Long index = 0L;
-    private final Collection<User> users;
+    private final Map<Long, User> users;
 
     @Override
     public Collection<User> findAll() {
-        return users;
+        return users.values();
     }
 
     @Override
     public User create(User user) {
         user.setId(++index);
-        users.add(user);
+        users.put(user.getId(), user);
         return user;
     }
 
     @Override
     public User update(User newUser) {
-        User user = users.stream()
-                .filter(user1 -> user1.getId().equals(newUser.getId()))
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("User (id = " + newUser.getId() + ") not found!"));
+        User user = users.get(newUser.getId());
         if (newUser.getEmail() != null
                 && !newUser.getEmail().equals(user.getEmail())
                 && isUserEmailExist(newUser.getEmail())) {
@@ -50,30 +47,22 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User findUserById(Long userId) {
-        return users.stream()
-                .filter(user -> user.getId().equals(userId))
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("User (id = " + userId + ") not found!"));
+        return users.get(userId);
     }
 
     @Override
     public boolean isUserEmailExist(String email) {
-        return users.stream()
+        return users.values().stream()
                 .anyMatch(user -> user.getEmail().equals(email));
     }
 
     @Override
     public boolean isUserExist(Long userId) {
-        return users.stream()
-                .anyMatch(user -> user.getId().equals(userId));
+        return users.containsKey(userId);
     }
 
     @Override
     public void delete(Long userId) {
-        User user = users.stream()
-                .filter(user1 -> user1.getId().equals(userId))
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("User (id = " + userId + ") not found!"));
-        users.remove(user);
+        users.remove(userId);
     }
 }
