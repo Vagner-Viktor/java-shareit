@@ -37,3 +37,6 @@ db/*
 
 ### Mac OS ###
 .DS_Store
+
+### DB VOLUME ###
+volumes
