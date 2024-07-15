@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Service
@@ -140,7 +141,7 @@ public class ItemServiceImpl implements ItemService {
         if (userId == null) {
             throw new ValidationException("Owner id not specified!");
         }
-        if (itemId != null && !(itemRepository.findById(itemId).orElse(null).getOwner().getId() == userId)) {
+        if (itemId != null && !(Objects.equals(Objects.requireNonNull(itemRepository.findById(itemId).orElse(null)).getOwner().getId(), userId))) {
             throw new NotFoundException("Only the owner can edit an item!");
         }
         if (itemId != null && !itemRepository.existsById(itemId)) {
