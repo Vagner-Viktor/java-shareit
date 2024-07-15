@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dao.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingRequestDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -23,17 +24,14 @@ public class BookingServiceImpl implements BookingService {
     private final ItemRepository itemRepository;
 
     @Override
-    public BookingDto create(Long userId, BookingDto bookingDto) {
-        validate(bookingDto);
-        if (userId==1 && bookingDto.getItemId()==1){
-            throw new NotFoundException("fd");
-        }
+    public BookingDto create(Long userId, BookingRequestDto bookingRequestDto) {
+        validate(userId, bookingRequestDto);
         return BookingMapper.toBookingDto(bookingRepository.save(
                 Booking.builder()
-                        .start(bookingDto.getStart())
-                        .end(bookingDto.getEnd())
-                        .item(itemRepository.findById(bookingDto.getItemId()).orElseThrow(() -> {
-                            throw new NotFoundException("Item id = " + bookingDto.getItemId() + " not found!");
+                        .start(bookingRequestDto.getStart())
+                        .end(bookingRequestDto.getEnd())
+                        .item(itemRepository.findById(bookingRequestDto.getItemId()).orElseThrow(() -> {
+                            throw new NotFoundException("Item id = " + bookingRequestDto.getItemId() + " not found!");
                         }))
                         .booker(userRepository.findById(userId).orElseThrow(() -> {
                             throw new NotFoundException("User id = " + userId + " not found!");
@@ -142,36 +140,39 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
-    private void validate(BookingDto bookingDto) {
-        Item item = itemRepository.findById(bookingDto.getItemId()).orElseThrow(() -> {
-            throw new NotFoundException("Item id = " + bookingDto.getItemId() + " not found!");
+    private void validate(Long userId, BookingRequestDto bookingRequestDto) {
+        Item item = itemRepository.findById(bookingRequestDto.getItemId()).orElseThrow(() -> {
+            throw new NotFoundException("Item id = " + bookingRequestDto.getItemId() + " not found!");
         });
-        if (!item.getAvailable()) {
+        if (item.getOwner().getId() == userId) {
+            throw new NotFoundException("Item is already booked!");
+        }
+        if (Boolean.FALSE.equals(item.getAvailable())) {
             throw new ValidationException("Available is not true!");
         }
-        if (bookingDto.getEnd() == null) {
+        if (bookingRequestDto.getEnd() == null) {
             throw new ValidationException("End date is null!");
         }
-        if (bookingDto.getStart() == null) {
+        if (bookingRequestDto.getStart() == null) {
             throw new ValidationException("Start date is null!");
         }
-        if (bookingDto.getEnd().isBefore(LocalDateTime.now())) {
+        if (bookingRequestDto.getEnd().isBefore(LocalDateTime.now())) {
             throw new ValidationException("End date before now!");
         }
-        if (bookingDto.getStart().isBefore(LocalDateTime.now())) {
+        if (bookingRequestDto.getStart().isBefore(LocalDateTime.now())) {
             throw new ValidationException("Start date before now!");
         }
-        if (bookingDto.getEnd().isBefore(bookingDto.getStart())) {
+        if (bookingRequestDto.getEnd().isBefore(bookingRequestDto.getStart())) {
             throw new ValidationException("End date before Start date!");
         }
-        if (bookingDto.getEnd().equals(bookingDto.getStart())) {
+        if (bookingRequestDto.getEnd().equals(bookingRequestDto.getStart())) {
             throw new ValidationException("End date equals Start date!");
         }
         if (bookingRepository.findAllByItemId(item.getId()).stream()
-                .anyMatch(booking -> (booking.getStart().isAfter(bookingDto.getStart())
-                        && booking.getStart().isBefore(bookingDto.getEnd()))
-                        || (booking.getEnd().isAfter(bookingDto.getStart())
-                        && booking.getEnd().isBefore(bookingDto.getEnd())))){
+                .anyMatch(booking -> (booking.getStart().isAfter(bookingRequestDto.getStart())
+                        && booking.getStart().isBefore(bookingRequestDto.getEnd()))
+                        || (booking.getEnd().isAfter(bookingRequestDto.getStart())
+                        && booking.getEnd().isBefore(bookingRequestDto.getEnd())))) {
             throw new ValidationException("Crossing dates!");
         }
     }
