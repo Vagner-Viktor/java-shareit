@@ -15,6 +15,7 @@ import ru.practicum.shareit.user.dao.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Objects;
 
 @AllArgsConstructor
 @Service
@@ -141,10 +142,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private void validate(Long userId, BookingRequestDto bookingRequestDto) {
-        Item item = itemRepository.findById(bookingRequestDto.getItemId()).orElseThrow(() -> {
-            throw new NotFoundException("Item id = " + bookingRequestDto.getItemId() + " not found!");
-        });
-        if (item.getOwner().getId() == userId) {
+        Item item = itemRepository.findById(bookingRequestDto.getItemId()).orElseThrow(() -> new NotFoundException("Item id = " + bookingRequestDto.getItemId() + " not found!"));
+        if (Objects.equals(item.getOwner().getId(), userId)) {
             throw new NotFoundException("Item is already booked!");
         }
         if (Boolean.FALSE.equals(item.getAvailable())) {
