@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   end_date TIMESTAMP WITHOUT TIME ZONE,
   item_id BIGINT NOT NULL,
   booker_id BIGINT NOT NULL,
-  status SMALLINT NOT NULL,
+  status VARCHAR(20) NOT NULL,
   CONSTRAINT pk_booking PRIMARY KEY (id)
   );
 
