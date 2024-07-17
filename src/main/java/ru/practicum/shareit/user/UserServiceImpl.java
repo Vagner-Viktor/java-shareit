@@ -21,7 +21,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto create(UserDto userDto) {
-        validation(userDto);
         return UserMapper.toUserDto(userRepository.save(UserMapper.toUser(userDto)));
     }
 
@@ -38,7 +37,6 @@ public class UserServiceImpl implements UserService {
                 && !userDto.getName().isBlank()) {
             user.setName(userDto.getName());
         }
-
         return UserMapper.toUserDto(userRepository.save(user));
     }
 
@@ -51,15 +49,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(Long userId) {
-//        if (!userRepository.isUserExist(userId)) {
-//            throw new NotFoundException("User (id = " + userId + ") not found!");
-//        }
         userRepository.deleteById(userId);
-    }
-
-    private void validation(UserDto userDto) {
-        // if (userRepository.isUserByEmailExist(userDto.getEmail())) {
-        //      throw new DuplicatedDataException("E-Mail " + userDto.getEmail() + " is exist!");
-        //  }
     }
 }

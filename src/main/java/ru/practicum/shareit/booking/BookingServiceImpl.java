@@ -1,6 +1,6 @@
 package ru.practicum.shareit.booking;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.dao.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingDto;
@@ -12,12 +12,13 @@ import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.dao.UserRepository;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Objects;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
@@ -27,17 +28,19 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingDto create(Long userId, BookingRequestDto bookingRequestDto) {
         validate(userId, bookingRequestDto);
+        Item item = itemRepository.findById(bookingRequestDto.getItemId()).orElseThrow(() -> {
+            throw new NotFoundException("Item id = " + bookingRequestDto.getItemId() + " not found!");
+        });
+        User booker = userRepository.findById(userId).orElseThrow(() -> {
+            throw new NotFoundException("User id = " + userId + " not found!");
+        });
         return BookingMapper.toBookingDto(bookingRepository.save(
                 Booking.builder()
                         .start(bookingRequestDto.getStart())
                         .end(bookingRequestDto.getEnd())
-                        .item(itemRepository.findById(bookingRequestDto.getItemId()).orElseThrow(() -> {
-                            throw new NotFoundException("Item id = " + bookingRequestDto.getItemId() + " not found!");
-                        }))
-                        .booker(userRepository.findById(userId).orElseThrow(() -> {
-                            throw new NotFoundException("User id = " + userId + " not found!");
-                        }))
-                        .status(BookingStatus.WAITING.name())
+                        .item(item)
+                        .booker(booker)
+                        .status(BookingStatus.WAITING)
                         .build()
         ));
     }
@@ -53,13 +56,13 @@ public class BookingServiceImpl implements BookingService {
         if (!booking.getItem().getOwner().getId().equals(userId)) {
             throw new NotFoundException("Only owner can set approved!");
         }
-        if (booking.getStatus().equals(BookingStatus.APPROVED.name())) {
+        if (booking.getStatus().equals(BookingStatus.APPROVED)) {
             throw new ValidationException("Status is APPROVED!");
         }
         if (approved) {
-            booking.setStatus(BookingStatus.APPROVED.name());
+            booking.setStatus(BookingStatus.APPROVED);
         } else {
-            booking.setStatus(BookingStatus.REJECTED.name());
+            booking.setStatus(BookingStatus.REJECTED);
         }
         bookingRepository.save(booking);
         return BookingMapper.toBookingDto(booking);
@@ -102,7 +105,7 @@ public class BookingServiceImpl implements BookingService {
                         .map(BookingMapper::toBookingDto)
                         .toList();
             case "WAITING", "REJECTED":
-                return bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(userId, state).stream()
+                return bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(userId, BookingStatus.valueOf(state)).stream()
                         .map(BookingMapper::toBookingDto)
                         .toList();
             default:
@@ -133,7 +136,7 @@ public class BookingServiceImpl implements BookingService {
                         .map(BookingMapper::toBookingDto)
                         .toList();
             case "WAITING", "REJECTED":
-                return bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(userId, state).stream()
+                return bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(userId, BookingStatus.valueOf(state)).stream()
                         .map(BookingMapper::toBookingDto)
                         .toList();
             default:
@@ -142,13 +145,6 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private void validate(Long userId, BookingRequestDto bookingRequestDto) {
-        Item item = itemRepository.findById(bookingRequestDto.getItemId()).orElseThrow(() -> new NotFoundException("Item id = " + bookingRequestDto.getItemId() + " not found!"));
-        if (Objects.equals(item.getOwner().getId(), userId)) {
-            throw new NotFoundException("Item is already booked!");
-        }
-        if (Boolean.FALSE.equals(item.getAvailable())) {
-            throw new ValidationException("Available is not true!");
-        }
         if (bookingRequestDto.getEnd() == null) {
             throw new ValidationException("End date is null!");
         }
@@ -166,6 +162,14 @@ public class BookingServiceImpl implements BookingService {
         }
         if (bookingRequestDto.getEnd().equals(bookingRequestDto.getStart())) {
             throw new ValidationException("End date equals Start date!");
+        }
+        Item item = itemRepository.findById(bookingRequestDto.getItemId()).orElseThrow(
+                () -> new NotFoundException("Item id = " + bookingRequestDto.getItemId() + " not found!"));
+        if (Objects.equals(item.getOwner().getId(), userId)) {
+            throw new NotFoundException("Item is already booked!");
+        }
+        if (Boolean.FALSE.equals(item.getAvailable())) {
+            throw new ValidationException("Available is not true!");
         }
         if (bookingRepository.findAllByItemId(item.getId()).stream()
                 .anyMatch(booking -> (booking.getStart().isAfter(bookingRequestDto.getStart())

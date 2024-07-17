@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.dao.BookingRepository;
-import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.comment.CommentMapper;
 import ru.practicum.shareit.comment.dao.CommentRepository;
 import ru.practicum.shareit.comment.dto.CommentDto;
@@ -20,7 +20,6 @@ import ru.practicum.shareit.user.dao.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -79,7 +78,7 @@ public class ItemServiceImpl implements ItemService {
         if (commentRequestDto == null || commentRequestDto.getText().isEmpty() || commentRequestDto.getText().isBlank()) {
             throw new ValidationException("Comment is empty!");
         }
-        if (bookingRepository.findAllByBookerIdAndItemIdAndStatusAndEndBefore(userId, itemId, "APPROVED", LocalDateTime.now()).isEmpty()) {
+        if (bookingRepository.findAllByBookerIdAndItemIdAndStatusAndEndBefore(userId, itemId, BookingStatus.APPROVED, LocalDateTime.now()).isEmpty()) {
             throw new ValidationException("The user (id = " + userId + ") did not book this item (id = " + itemId + ") for rent");
         }
         return CommentMapper.toCommentDto(commentRepository.save(Comment.builder()
@@ -101,28 +100,20 @@ public class ItemServiceImpl implements ItemService {
         });
         return ItemMapper.toItemInfoDto(
                 item,
-                BookingMapper.toBookingDateInfoDto(bookingRepository.findFirstByItemIdAndItemOwnerIdAndStartBeforeAndStatusOrderByStartDesc(itemId, userId, LocalDateTime.now(), "APPROVED").orElse(null)),
-                BookingMapper.toBookingDateInfoDto(bookingRepository.findFirstByItemIdAndItemOwnerIdAndStartAfterAndStatusOrderByStartAsc(itemId, userId, LocalDateTime.now(), "APPROVED").orElse(null)),
+                BookingMapper.toBookingDateInfoDto(bookingRepository.findFirstByItemIdAndItemOwnerIdAndStartBeforeAndStatusOrderByStartDesc(itemId, userId, LocalDateTime.now(), BookingStatus.APPROVED).orElse(null)),
+                BookingMapper.toBookingDateInfoDto(bookingRepository.findFirstByItemIdAndItemOwnerIdAndStartAfterAndStatusOrderByStartAsc(itemId, userId, LocalDateTime.now(), BookingStatus.APPROVED).orElse(null)),
                 CommentMapper.toCommentsDtoCollection(commentRepository.findAllByItemId(itemId))
         );
     }
 
     @Override
     public Collection<ItemInfoDto> findItemsByUserId(Long userId) {
-        HashMap<Long, Item> items = new HashMap<>();
-        itemRepository.findAllByOwnerIdOrderByIdAsc(userId).stream()
-                .forEach(item -> items.put(item.getId(), item));
-        HashMap<Long, Booking> bookingsBefore = new HashMap<>();
-        bookingRepository.findAllByItemIdInAndItemOwnerIdAndStartBeforeAndStatusOrderByStartDesc(items.keySet(), userId, LocalDateTime.now(), "APPROVED")
-                .stream().forEach(booking -> bookingsBefore.put(booking.getItem().getId(), booking));
-        HashMap<Long, Booking> bookingsAfter = new HashMap<>();
-        bookingRepository.findAllByItemIdInAndItemOwnerIdAndEndAfterAndStatusOrderByStartDesc(items.keySet(), userId, LocalDateTime.now(), "APPROVED")
-                .stream().forEach(booking -> bookingsAfter.put(booking.getItem().getId(), booking));
-        return items.values().stream()
+        Collection<Item> items = itemRepository.findAllByOwnerIdOrderByIdAsc(userId);
+        return itemRepository.findAllByOwnerIdOrderByIdAsc(userId).stream()
                 .map(item -> ItemMapper.toItemInfoDto(item,
-                        BookingMapper.toBookingDateInfoDto(bookingsBefore.get(item.getId())),
-                        BookingMapper.toBookingDateInfoDto(bookingsAfter.get(item.getId())),
-                        CommentMapper.toCommentsDtoCollection(commentRepository.findAllByItemId(item.getId()))))
+                        BookingMapper.toBookingDateInfoDto(item.getBookings().isEmpty() ? null : item.getBookings().getFirst()),
+                        BookingMapper.toBookingDateInfoDto(item.getBookings().isEmpty() ? null : item.getBookings().getLast()),
+                        CommentMapper.toCommentsDtoCollection(item.getComments())))
                 .toList();
     }
 

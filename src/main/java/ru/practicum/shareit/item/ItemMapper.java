@@ -17,6 +17,7 @@ public class ItemMapper {
     }
 
     public static ItemDto toItemDto(Item item) {
+        if (item == null) return null;
         return new ItemDto(
                 item.getId(),
                 item.getName(),
@@ -30,6 +31,7 @@ public class ItemMapper {
                                             BookingDateInfoDto lastBooking,
                                             BookingDateInfoDto nextBooking,
                                             Collection<CommentDto> commentDtos) {
+        if (item == null) return null;
         return ItemInfoDto.builder()
                 .id(item.getId())
                 .name(item.getName())

@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,8 +16,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.comment.model.Comment;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
+
+import java.util.List;
 
 @Entity
 @Table(name = "items")
@@ -41,4 +46,10 @@ public class Item {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id")
     private ItemRequest request;
+    @OneToMany
+    @JoinColumn(name = "item_id")
+    private List<Booking> bookings;
+    @OneToMany
+    @JoinColumn(name = "item_id")
+    private List<Comment> comments;
 }

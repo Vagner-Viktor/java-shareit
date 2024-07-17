@@ -3,6 +3,8 @@ package ru.practicum.shareit.booking.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -43,6 +45,6 @@ public class Booking {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booker_id")
     private User booker;
-    @Column(name = "status")
-    private String status;
+    @Enumerated(EnumType.ORDINAL)
+    private BookingStatus status;
 }
