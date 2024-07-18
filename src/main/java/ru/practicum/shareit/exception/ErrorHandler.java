@@ -30,8 +30,8 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleRuntimeException(final RuntimeException e) {
         return new ErrorResponse(
-                "Internal Error!",
-                e.getMessage()
+                e.getMessage(),
+                "Internal Error!"
         );
     }
 

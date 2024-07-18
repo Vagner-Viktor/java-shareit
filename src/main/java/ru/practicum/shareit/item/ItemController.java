@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.shareit.comment.dto.CommentDto;
+import ru.practicum.shareit.comment.dto.CommentRequestDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemInfoDto;
 
 import java.util.Collection;
 
@@ -22,13 +25,14 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping
-    public Collection<ItemDto> findAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
+    public Collection<ItemInfoDto> findAll(@RequestHeader("X-Sharer-User-Id") Long userId) {
         return itemService.findItemsByUserId(userId);
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItemDto(@PathVariable Long itemId) {
-        return itemService.findItemById(itemId);
+    public ItemInfoDto getItemDto(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                  @PathVariable Long itemId) {
+        return itemService.findItemById(userId, itemId);
     }
 
     @PostMapping
@@ -42,6 +46,13 @@ public class ItemController {
                           @PathVariable Long itemId,
                           @RequestBody ItemDto itemDto) {
         return itemService.update(userId, itemId, itemDto);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentDto addComment(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                 @PathVariable Long itemId,
+                                 @RequestBody CommentRequestDto commentRequestDto) {
+        return itemService.addComment(userId, itemId, commentRequestDto);
     }
 
     @GetMapping("/search")
