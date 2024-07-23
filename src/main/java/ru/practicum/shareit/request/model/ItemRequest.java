@@ -36,7 +36,7 @@ public class ItemRequest {
     private User requestor;
     @NotNull
     private LocalDateTime created;
-    @OneToMany
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id", referencedColumnName = "id")
     private Collection<Item> items;
 }
