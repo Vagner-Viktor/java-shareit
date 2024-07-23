@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.request.dao.ItemRequestRepository;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestRequestDto;
@@ -19,10 +20,10 @@ import java.util.List;
 public class ItemRequestServiceImpl implements ItemRequestService {
     private final ItemRequestRepository itemRequestRepository;
     private final UserRepository userRepository;
+    private final ItemRepository itemRepository;
 
     @Override
     public List<ItemRequestDto> findAllByUserId(Long userId) {
-        List<ItemRequest> items = itemRequestRepository.findAllByRequestorId(userId);
         return ItemRequestMapper.toItemRequestDtoList(itemRequestRepository.findAllByRequestorId(userId));
     }
 
@@ -31,22 +32,22 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         User requestor = userRepository.findById(itemRequestRequestDto.getRequestorId()).orElseThrow(() -> {
             throw new NotFoundException("User id = " + itemRequestRequestDto.getRequestorId() + " not found!");
         });
-        return ItemRequestMapper.toItemRequestDto(itemRequestRepository.save(
+        ItemRequest itemRequest = itemRequestRepository.save(
                 ItemRequest.builder()
                         .description(itemRequestRequestDto.getDescription())
                         .requestor(requestor)
                         .created(LocalDateTime.now())
                         .build()
-        ));
+        );
+        return ItemRequestMapper.toItemRequestDto(itemRequest);
     }
 
     @Override
     public ItemRequestDto findItemRequestById(Long itemRequestId) {
         return ItemRequestMapper.toItemRequestDto(
-                itemRequestRepository.findById(itemRequestId).orElseThrow(() -> {
+                itemRequestRepository.findByIdOrderByCreatedAsc(itemRequestId).orElseThrow(() -> {
                     throw new NotFoundException("ItemRequest id = " + itemRequestId + " not found!");
-                })
-        );
+                }));
     }
 
     @Override

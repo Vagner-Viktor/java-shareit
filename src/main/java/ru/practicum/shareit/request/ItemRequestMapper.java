@@ -1,5 +1,6 @@
 package ru.practicum.shareit.request;
 
+import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.UserMapper;
@@ -21,6 +22,7 @@ public class ItemRequestMapper {
                 .description(itemRequest.getDescription())
                 .requestor(UserMapper.toUserDto(itemRequest.getRequestor()))
                 .created(itemRequest.getCreated())
+                .items(ItemMapper.toItemsDtoCollection(itemRequest.getItems() != null ? itemRequest.getItems() : List.of()))
                 .build();
     }
 }

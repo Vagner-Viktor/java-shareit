@@ -7,15 +7,18 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,4 +36,7 @@ public class ItemRequest {
     private User requestor;
     @NotNull
     private LocalDateTime created;
+    @OneToMany
+    @JoinColumn(name = "request_id", referencedColumnName = "id")
+    private Collection<Item> items;
 }

@@ -7,10 +7,11 @@ import ru.practicum.shareit.item.dto.ItemInfoDto;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.Collection;
-
+import java.util.List;
 
 public class ItemMapper {
     public static Collection<ItemDto> toItemsDtoCollection(Collection<Item> items) {
+        if (items == null) return List.of();
         return items.stream()
                 .map(ItemMapper::toItemDto)
                 .toList();
@@ -37,19 +38,10 @@ public class ItemMapper {
                 .name(item.getName())
                 .description(item.getDescription())
                 .available(item.getAvailable())
-                .request(item.getRequest() != null ? item.getRequest().getId() : null)
+                .requestId(item.getRequest() != null ? item.getRequest().getId() : null)
                 .lastBooking(lastBooking)
                 .nextBooking(nextBooking)
                 .comments(commentDtos)
-                .build();
-    }
-
-    public static Item toItem(ItemDto itemDto) {
-        return Item.builder()
-                .id(itemDto.getId())
-                .name(itemDto.getName())
-                .description(itemDto.getDescription())
-                .available(itemDto.getAvailable())
                 .build();
     }
 }

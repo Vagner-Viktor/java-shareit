@@ -43,8 +43,8 @@ public class Item {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private User owner;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "request_id")
+    @ManyToOne
+    @JoinColumn(name = "request_id", referencedColumnName = "id")
     private ItemRequest request;
     @OneToMany
     @JoinColumn(name = "item_id")

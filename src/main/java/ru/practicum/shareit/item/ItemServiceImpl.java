@@ -16,7 +16,10 @@ import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemInfoDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.dao.ItemRequestRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.dao.UserRepository;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -30,6 +33,7 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
     public Collection<ItemDto> findAll() {
@@ -39,15 +43,22 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto create(Long userId, ItemDto itemDto) {
         validation(userId, null);
+        User user = userRepository.findById(userId).orElseThrow(() -> {
+            throw new NotFoundException("User id = " + userId + " not found!");
+        });
+        ItemRequest itemRequest = null;
+        if (itemDto.getRequestId() != null) {
+            itemRequest = itemRequestRepository.findById(itemDto.getRequestId()).orElseThrow(() -> {
+                throw new NotFoundException("ItemRequest id = " + itemDto.getRequestId() + " not found!");
+            });
+        }
         return ItemMapper.toItemDto(itemRepository.save(
                 Item.builder()
                         .name(itemDto.getName())
-                        .owner(userRepository.findById(userId).orElseThrow(() -> {
-                            throw new NotFoundException("User id = " + userId + " not found!");
-                        }))
+                        .owner(user)
                         .description(itemDto.getDescription())
                         .available(itemDto.getAvailable())
-                        .request(null)
+                        .request(itemRequest)
                         .build()
         ));
     }
@@ -108,7 +119,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Collection<ItemInfoDto> findItemsByUserId(Long userId) {
-        Collection<Item> items = itemRepository.findAllByOwnerIdOrderByIdAsc(userId);
         return itemRepository.findAllByOwnerIdOrderByIdAsc(userId).stream()
                 .map(item -> ItemMapper.toItemInfoDto(item,
                         BookingMapper.toBookingDateInfoDto(item.getBookings().isEmpty() ? null : item.getBookings().getFirst()),
