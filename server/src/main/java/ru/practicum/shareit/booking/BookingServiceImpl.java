@@ -51,7 +51,7 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException("Booking id = " + bookingId + " not found!");
         });
         if (!userRepository.existsById(userId)) {
-            throw new NotFoundException("User id = " + userId + " not found!");
+            throw new ValidationException("User id = " + userId + " not found!");
         }
         if (!booking.getItem().getOwner().getId().equals(userId)) {
             throw new NotFoundException("Only owner can set approved!");
@@ -162,6 +162,9 @@ public class BookingServiceImpl implements BookingService {
         }
         if (bookingRequestDto.getEnd().equals(bookingRequestDto.getStart())) {
             throw new ValidationException("End date equals Start date!");
+        }
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("User id = " + userId + " not found!");
         }
         Item item = itemRepository.findById(bookingRequestDto.getItemId()).orElseThrow(
                 () -> new NotFoundException("Item id = " + bookingRequestDto.getItemId() + " not found!"));
