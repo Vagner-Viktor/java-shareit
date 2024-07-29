@@ -4,6 +4,7 @@ import ru.practicum.shareit.comment.dto.CommentDto;
 import ru.practicum.shareit.comment.model.Comment;
 
 import java.util.Collection;
+import java.util.List;
 
 public class CommentMapper {
     public static CommentDto toCommentDto(Comment comment) {
@@ -17,6 +18,7 @@ public class CommentMapper {
     }
 
     public static Collection<CommentDto> toCommentsDtoCollection(Collection<Comment> comments) {
+        if (comments == null) return List.of();
         return comments.stream()
                 .map(CommentMapper::toCommentDto)
                 .toList();

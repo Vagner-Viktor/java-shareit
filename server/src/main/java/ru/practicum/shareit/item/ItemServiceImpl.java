@@ -121,8 +121,8 @@ public class ItemServiceImpl implements ItemService {
     public Collection<ItemInfoDto> findItemsByUserId(Long userId) {
         return itemRepository.findAllByOwnerIdOrderByIdAsc(userId).stream()
                 .map(item -> ItemMapper.toItemInfoDto(item,
-                        BookingMapper.toBookingDateInfoDto(item.getBookings().isEmpty() ? null : item.getBookings().getFirst()),
-                        BookingMapper.toBookingDateInfoDto(item.getBookings().isEmpty() ? null : item.getBookings().getLast()),
+                        BookingMapper.toBookingDateInfoDto(item.getBookings() == null || item.getBookings().isEmpty() ? null : item.getBookings().getFirst()),
+                        BookingMapper.toBookingDateInfoDto(item.getBookings() == null || item.getBookings().isEmpty() ? null : item.getBookings().getLast()),
                         CommentMapper.toCommentsDtoCollection(item.getComments())))
                 .toList();
     }
@@ -144,9 +144,6 @@ public class ItemServiceImpl implements ItemService {
         }
         if (itemId != null && !(Objects.equals(Objects.requireNonNull(itemRepository.findById(itemId).orElse(null)).getOwner().getId(), userId))) {
             throw new NotFoundException("Only the owner can edit an item!");
-        }
-        if (itemId != null && !itemRepository.existsById(itemId)) {
-            throw new NotFoundException("Item (id = " + itemId + ") not found!");
         }
     }
 }
