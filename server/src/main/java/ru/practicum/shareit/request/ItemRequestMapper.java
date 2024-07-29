@@ -9,7 +9,7 @@ import java.util.List;
 
 public class ItemRequestMapper {
 
-    static public List<ItemRequestDto> toItemRequestDtoList(List<ItemRequest> itemRequests) {
+    public static List<ItemRequestDto> toItemRequestDtoList(List<ItemRequest> itemRequests) {
         return itemRequests.stream()
                 .map(ItemRequestMapper::toItemRequestDto)
                 .toList();

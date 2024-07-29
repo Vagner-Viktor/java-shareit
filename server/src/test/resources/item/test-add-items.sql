@@ -1,13 +1,15 @@
 delete from users;
-insert into users ( name, email)
-values( 'TestUserNameInBD', 'TestUserEmail@in.BD');
-insert into users ( name, email)
-values( 'TestUserNameInBD2', 'TestUserEmail2@in.BD');
-
 delete from requests;
-insert into requests ( description, requestor_id, created)
-values ( 'TestDescriptionInDB', 1, NOW());
-
 delete from items;
-insert into items ( name, description, is_available, owner_id, request_id)
-values ('TestNameInBD', 'TestDescriptionInDB', true, 1, 1);
+
+merge into users (id, name, email)
+values(1, 'TestUserNameInBD', 'TestUserEmail@in.BD');
+
+merge into users (id, name, email)
+values(2, 'TestUserNameInBD2', 'TestUserEmail2@in.BD');
+
+merge into requests(id, description, requestor_id, created)
+values (1, 'TestDescriptionInDB', 1, '2024-07-30 06:00:00');
+
+merge into items(id, name, description, is_available, owner_id, request_id)
+values (1, 'TestNameInBD', 'TestDescriptionInDB', true, 1, 1);
