@@ -17,7 +17,7 @@ public class ItemInfoDto {
     private Long id;
     private String name;
     private String description;
-    private boolean available;
+    private Boolean available;
     private Long requestId;
     private Collection<CommentDto> comments;
     private BookingDateInfoDto lastBooking;
